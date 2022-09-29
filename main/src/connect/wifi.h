@@ -15,9 +15,7 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 #include "freertos/semphr.h"
-#include "nvs_flash.h"
 
-static const char *TAG_CONNECT = "Wi-fi";
 static int s_active_interfaces = 0;
 static SemaphoreHandle_t s_semph_get_ip_addrs;
 static esp_netif_t *s_example_esp_netif = NULL;
@@ -33,11 +31,11 @@ static bool is_our_netif(const char *prefix, esp_netif_t *netif)
 static void on_got_ip(void *arg, esp_event_base_t event_base,
                       int32_t event_id, void *event_data) {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
-    if (!is_our_netif(TAG_CONNECT, event->esp_netif)) {
-        ESP_LOGW(TAG_CONNECT, "Got IPv4 from another interface \"%s\": ignored", esp_netif_get_desc(event->esp_netif));
+    if (!is_our_netif(__FILE__, event->esp_netif)) {
+        ESP_LOGW(__FILE__, "Got IPv4 from another interface \"%s\": ignored", esp_netif_get_desc(event->esp_netif));
         return;
     }
-    ESP_LOGI(TAG_CONNECT, "Got IPv4 event: Interface \"%s\" address: " IPSTR, esp_netif_get_desc(event->esp_netif), IP2STR(&event->ip_info.ip));
+    ESP_LOGI(__FILE__, "Got IPv4 event: Interface \"%s\" address: " IPSTR, esp_netif_get_desc(event->esp_netif), IP2STR(&event->ip_info.ip));
     memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
     xSemaphoreGive(s_semph_get_ip_addrs);
 }
@@ -45,7 +43,7 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
 
 static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data) {
-    ESP_LOGI(TAG_CONNECT, "Wi-Fi disconnected, trying to reconnect...");
+    ESP_LOGI(__FILE__, "Wi-Fi disconnected, trying to reconnect...");
     esp_err_t err = esp_wifi_connect();
     if (err == ESP_ERR_WIFI_NOT_STARTED) {
         return;
@@ -56,7 +54,7 @@ esp_netif_t *get_example_netif_from_desc(const char *desc)
 {
     esp_netif_t *netif = NULL;
     char *expected_desc;
-    asprintf(&expected_desc, "%s: %s", TAG_CONNECT, desc);
+    asprintf(&expected_desc, "%s: %s", __FILE__, desc);
     while ((netif = esp_netif_next(netif)) != NULL) {
         if (strcmp(esp_netif_get_desc(netif), expected_desc) == 0) {
             free(expected_desc);
@@ -92,7 +90,7 @@ static esp_netif_t* wifi_start(void) {
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
     esp_netif_inherent_config_t esp_netif_config = ESP_NETIF_INHERENT_DEFAULT_WIFI_STA();
-    asprintf(&desc, "%s: %s", TAG_CONNECT, esp_netif_config.if_desc);
+    asprintf(&desc, "%s: %s", __FILE__, esp_netif_config.if_desc);
     esp_netif_config.if_desc = desc;
     esp_netif_config.route_prio = 128;
     esp_netif_t *netif = esp_netif_create_wifi(WIFI_IF_STA, &esp_netif_config);
@@ -109,7 +107,7 @@ static esp_netif_t* wifi_start(void) {
             .password = CONFIG_WIFI_PASSWORD,
         },
     };
-    ESP_LOGI(TAG_CONNECT, "Connecting to %s...", wifi_config.sta.ssid);
+    ESP_LOGI(__FILE__, "Connecting to %s...", wifi_config.sta.ssid);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
@@ -138,7 +136,7 @@ esp_err_t connect_wifi_connect(void) {
 
     connect_wifi_start();
     ESP_ERROR_CHECK(esp_register_shutdown_handler(&connect_wifi_stop));
-    ESP_LOGI(TAG_CONNECT, "Waiting for IP(s)");
+    ESP_LOGI(__FILE__, "Waiting for IP(s)");
     for (int i=0; i<NR_OF_IP_ADDRESSES_TO_WAIT_FOR; ++i) {
         xSemaphoreTake(s_semph_get_ip_addrs, portMAX_DELAY);
     }
@@ -147,11 +145,11 @@ esp_err_t connect_wifi_connect(void) {
     esp_netif_ip_info_t ip;
     for (int i=0; i<esp_netif_get_nr_of_ifs(); ++i) {
         netif = esp_netif_next(netif);
-        if (is_our_netif(TAG_CONNECT, netif)) {
-            ESP_LOGI(TAG_CONNECT, "Connected to %s", esp_netif_get_desc(netif));
+        if (is_our_netif(__FILE__, netif)) {
+            ESP_LOGI(__FILE__, "Connected to %s", esp_netif_get_desc(netif));
             ESP_ERROR_CHECK(esp_netif_get_ip_info(netif, &ip));
 
-            ESP_LOGI(TAG_CONNECT, "- IPv4 address: " IPSTR, IP2STR(&ip.ip));
+            ESP_LOGI(__FILE__, "- IPv4 address: " IPSTR, IP2STR(&ip.ip));
         }
     }
     return ESP_OK;

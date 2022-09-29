@@ -21,3 +21,21 @@ menu "MQTT Connection"
         help
             IP and port to connect mqtt broker, exemple mqtt://192.168.0.121:5588
 endmenu
+
+menu "MQTT Connection"
+
+    config MQTT_IP_PORT
+        string "MQTT IP and PORT"
+        default "mqtt://192.168.0.121:5588"
+        help
+            IP and port to connect mqtt broker, exemple mqtt://192.168.0.121:5588
+endmenu
+
+menu "Timers"
+
+    config TIMER_READ_US
+        int "Timer in microseconds to read values"
+        default 5000000
+        help
+            Timer in microseconds to read values
+endmenu
