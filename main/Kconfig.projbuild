@@ -2,13 +2,13 @@ menu "Wi-fi Connection"
 
     config WIFI_SSID
         string "Wi-fi ssid"
-        default "2345678"
+        default "ap1"
         help
             Wi-fi name.
 
     config WIFI_PASSWORD
         string "Wi-fi password"
-        default "tanahorademolharobiscoito"
+        default "casablanca"
         help
             Wi-fi password.
 endmenu
@@ -17,18 +17,21 @@ menu "MQTT Connection"
 
     config MQTT_IP_PORT
         string "MQTT IP and PORT"
-        default "mqtt://192.168.0.121:5588"
+        default "mqtts://192.168.0.121:8883"
         help
             IP and port to connect mqtt broker, exemple mqtt://192.168.0.121:5588
-endmenu
 
-menu "MQTT Connection"
-
-    config MQTT_IP_PORT
-        string "MQTT IP and PORT"
-        default "mqtt://192.168.0.121:5588"
+    config MQTT_USERNAME
+        string "MQTT username"
+        default "carolina"
         help
-            IP and port to connect mqtt broker, exemple mqtt://192.168.0.121:5588
+            Username to connect mqtt broker
+
+    config MQTT_PASSWORD
+        string "MQTT password"
+        default "2022"
+        help
+            Password to connect mqtt broker
 endmenu
 
 menu "Timers"

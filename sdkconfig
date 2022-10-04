@@ -133,19 +133,16 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # Wi-fi Connection
 #
-CONFIG_WIFI_SSID="2345678"
-CONFIG_WIFI_PASSWORD="tanahorademolharobiscoito"
+CONFIG_WIFI_SSID="ap1"
+CONFIG_WIFI_PASSWORD="casablanca"
 # end of Wi-fi Connection
 
 #
 # MQTT Connection
 #
-CONFIG_MQTT_IP_PORT="mqtt://192.168.0.121:5588"
-# end of MQTT Connection
-
-#
-# MQTT Connection
-#
+CONFIG_MQTT_IP_PORT="mqtts://192.168.0.121:8883"
+CONFIG_MQTT_USERNAME="carolina"
+CONFIG_MQTT_PASSWORD="2022"
 # end of MQTT Connection
 
 #
