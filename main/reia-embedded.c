@@ -7,6 +7,8 @@
 #include "esp_timer.h"
 #include <nvs_flash.h>
 #include "src/crypt/encrypt.h"
+#include "src/crypt/dencrypt.h"
+#include <mbedtls/base64.h>
 
 void app_main(void)
 {
@@ -15,6 +17,11 @@ void app_main(void)
     
     if (!loadRsaKeyPub()) {
         ESP_LOGE(__FILE__, "Error to load RSA key");
+        return;
+    }
+
+    if (!loadRsaKeyDecrypt()) {
+        ESP_LOGE(__FILE__, "Error to load RSA key for decryption");
         return;
     }
 
@@ -29,7 +36,6 @@ void app_main(void)
     float volt = 0;
     char buffer[16] = {0};
     char *buffer_payload;
-    
     int64_t last_call = esp_timer_get_time(); 
     while (1) 
     {
@@ -37,13 +43,30 @@ void app_main(void)
             volt = get_value();
             snprintf(buffer, 15, "%.4f", volt);
             
-            buffer_payload = encryptPayload(buffer);
+            size_t olen = 0;
+            ESP_LOGD(__FILE__, "len: [%i]", strlen(buffer));
+            buffer_payload = encryptPayload(buffer, &olen);
             if(buffer_payload != NULL){
-                esp_mqtt_client_publish(client_mqtt, "esp1/volt", buffer_payload, 0, 0, 0);
+
+                // esp_mqtt_client_publish(client_mqtt, "esp1/volt2", buffer, 0, 0, 0);
+
+                // char *out = decrypt(olen, buffer_payload);
+                // if(out != NULL){
+                //     ESP_LOGI(__FILE__, "%s", out);
+                //     free(out);
+                // }
+
+                size_t encode_len = 0;
+                uint8_t enc[1000] = {0};
+                mbedtls_base64_encode((uint8_t*)enc, 1000, &encode_len, (const uint8_t*)buffer_payload, olen);
+                ESP_LOGI(__FILE__, "%i", olen);
+                ESP_LOGI(__FILE__, "%s", enc);
+                esp_mqtt_client_publish(client_mqtt, "esp1/volt", (char*)enc, 0, 0, 0);
+
                 free(buffer_payload);
             }
             
-            ESP_LOGI(__FILE__, "%f", volt);
+            ESP_LOGI(__FILE__, "%s", buffer);
             last_call = esp_timer_get_time();
         }
 
