@@ -7,6 +7,7 @@
 #include "esp_log.h"
 #include <string.h>
 #include <mbedtls/error.h>
+#include <mbedtls/base64.h>
 
 
 FILE *f;
@@ -52,19 +53,26 @@ bool loadRsaKeyDecrypt()
     return true;
 }
 
-char *decrypt(size_t i, char *in)
+char *decryptPayload(size_t i, char *in)
 {
-    /*
-     * Decrypt the encrypted RSA data and print the result.
-     */
-
     char buffer[512] = {0};
     size_t olen = 0;
-    ESP_LOGD(__FILE__, "len: [%i]", i);
+    size_t decode_olen = 0;
+    
+    uint8_t decode_data[i];
+
+    ESP_LOGI(__FILE__, "data: [%s]", in);
+    ESP_LOGI(__FILE__, "data_len: [%i]", i);
+
+    mbedtls_base64_decode(decode_data, i, &decode_olen, (uint8_t *)in, i);
+
+    ESP_LOGI(__FILE__, "decoded data: [%s]", decode_data);
+    ESP_LOGI(__FILE__, "decoded data len: [%i]", decode_olen);
+    
     if( (ret = mbedtls_pk_decrypt( 
             &pk, 
-            (const unsigned char*)in, 
-            i, 
+            (const unsigned char*)decode_data, 
+            decode_olen, 
             (unsigned char *)buffer, 
             &olen, 
             512,
