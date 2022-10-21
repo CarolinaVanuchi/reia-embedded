@@ -1,5 +1,5 @@
-#ifndef _DENCRYPT_
-#define _DENCRYPT_
+#ifndef _DECRYPT_
+#define _DECRYPT_
 
 #include "mbedtls/pk.h"
 #include "mbedtls/ctr_drbg.h"
@@ -36,16 +36,16 @@ bool loadRsaKeyDecrypt()
 
     if (ret != 0)
     {
-        char msgbuf[500] = {0};
-        mbedtls_strerror(ret, (char *)&msgbuf, 500);
+        char msgbuf[400] = {0};
+        mbedtls_strerror(ret, (char *)&msgbuf, 400);
         ESP_LOGE(__FILE__, "[%i] loadRsaKeyDecrypt: [-0x%04x: %s]", __LINE__, -ret, msgbuf);
         return false;
     }
 
     if( ( ret = mbedtls_pk_parse_key( &pk, (const unsigned char*)rsa_private_key_start, (size_t)(rsa_private_key_end - rsa_private_key_start), NULL, 0) ) != 0 )
     {
-        char msgbuf[500] = {0};
-        mbedtls_strerror(ret, (char *)&msgbuf, 500);
+        char msgbuf[400] = {0};
+        mbedtls_strerror(ret, (char *)&msgbuf, 400);
         ESP_LOGE(__FILE__, "[%i] loadRsaKeyDecrypt: [-0x%04x: %s]", __LINE__, -ret, msgbuf);
         return false;
     }
@@ -61,13 +61,7 @@ char *decryptPayload(size_t i, char *in)
     
     uint8_t decode_data[i];
 
-    ESP_LOGI(__FILE__, "data: [%s]", in);
-    ESP_LOGI(__FILE__, "data_len: [%i]", i);
-
     mbedtls_base64_decode(decode_data, i, &decode_olen, (uint8_t *)in, i);
-
-    ESP_LOGI(__FILE__, "decoded data: [%s]", decode_data);
-    ESP_LOGI(__FILE__, "decoded data len: [%i]", decode_olen);
     
     if( (ret = mbedtls_pk_decrypt( 
             &pk, 
@@ -80,13 +74,13 @@ char *decryptPayload(size_t i, char *in)
             &ctr_drbg )
     ) != 0 
     ){
-        char msgbuf[500] = {0};
-        mbedtls_strerror(ret, (char *)&msgbuf, 500);
+        char msgbuf[400] = {0};
+        mbedtls_strerror(ret, (char *)&msgbuf, 400);
         ESP_LOGE(__FILE__, "[%i] loadRsaKeyDecrypt: [-0x%04x: %s]", __LINE__, -ret, msgbuf);
         return NULL;
     }
 
-    ESP_LOGD(__FILE__, "len: [%i]", olen);
+  
     char *out = calloc(sizeof(char), olen + 1);
     memcpy(out, buffer, olen);
     return out;

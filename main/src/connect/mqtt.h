@@ -7,11 +7,10 @@
 #include "esp_tls.h"
 #include "sdkconfig.h"
 #include "../text_file.h"
-#include "src/crypt/dencrypt.h"
+#include "src/crypt/decrypt.h"
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    int msg_id;
     esp_mqtt_event_handle_t event = event_data;
     esp_mqtt_client_handle_t client = event->client;
 
@@ -19,8 +18,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(__FILE__, "MQTT_EVENT_CONNECTED");
-       msg_id = esp_mqtt_client_subscribe(client, "webserver/sampling", 2);
-        // ESP_LOGI(__FILE__, "sent subscribe successful, msg_id=%d", msg_id);
+        esp_mqtt_client_subscribe(client, "webserver/sampling", 2);
         break;
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(__FILE__, "MQTT_EVENT_DISCONNECTED");
@@ -31,7 +29,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
         char *out_dec = decryptPayload(event->data_len, event->data);
         
-        ESP_LOGI(__FILE__, "received: %s", out_dec);
+        ESP_LOGI(__FILE__, "Received: %s", out_dec);
 
         if(out_dec != NULL) free(out_dec);
         

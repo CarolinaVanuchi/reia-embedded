@@ -12,7 +12,7 @@ mbedtls_pk_context en_pk;
 mbedtls_entropy_context en_entropy;
 mbedtls_ctr_drbg_context en_ctr_drbg;
 
-bool loadRsaKeyPub()
+bool loadRsaKeyEncrypt()
 {
     int ret = 0;
     mbedtls_ctr_drbg_init(&en_ctr_drbg);
@@ -21,8 +21,8 @@ bool loadRsaKeyPub()
 
     if ((ret = mbedtls_ctr_drbg_seed(&en_ctr_drbg, mbedtls_entropy_func, &en_entropy, NULL, 0)) != 0)
     {
-        char msgbuf[500] = {0};
-        mbedtls_strerror(ret, (char *)&msgbuf, 500);
+        char msgbuf[400] = {0};
+        mbedtls_strerror(ret, (char *)&msgbuf, 400);
         ESP_LOGE(__FILE__, " [-0x%04x: %s]", -ret, msgbuf);
         return false;
     }
@@ -30,8 +30,8 @@ bool loadRsaKeyPub()
    
     if ((ret = mbedtls_pk_parse_public_key(&en_pk, (const unsigned char *)rsa_key_start, (size_t)(rsa_key_end - rsa_key_start))) != 0)
     {
-        char msgbuf[500] = {0};
-        mbedtls_strerror(ret, (char *)&msgbuf, 500);
+        char msgbuf[400] = {0};
+        mbedtls_strerror(ret, (char *)&msgbuf, 400);
         ESP_LOGE(__FILE__, " [-0x%04x: %s]", -ret, msgbuf);
         return false;
     }
@@ -48,8 +48,8 @@ char *encryptPayload(char *value, size_t *outlen)
 
     if ((ret_code = mbedtls_pk_encrypt(&en_pk, (const unsigned char *)value, strlen(value), buf, &olen, MBEDTLS_MPI_MAX_SIZE, mbedtls_ctr_drbg_random, &en_ctr_drbg)) != 0)
     {
-        char msgbuf[500] = {0};
-        mbedtls_strerror(ret_code, (char *)&msgbuf, 500);
+        char msgbuf[400] = {0};
+        mbedtls_strerror(ret_code, (char *)&msgbuf, 400);
         ESP_LOGI(__FILE__, "Failed in encrypt: [-0x%04x: %s]", -ret_code, (char *)msgbuf);
         return NULL;
     }

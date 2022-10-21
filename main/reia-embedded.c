@@ -16,7 +16,7 @@ void app_main(void)
 
     ESP_LOGI(__FILE__, "Start...");
 
-    if (!loadRsaKeyPub())
+    if (!loadRsaKeyEncrypt())
     {
         ESP_LOGE(__FILE__, "Error to load RSA key");
         return;
@@ -36,12 +36,10 @@ void app_main(void)
     setup_read();
     esp_mqtt_client_handle_t client_mqtt = setup_mqtt();
 
-    float volt = 0;
+   
     char buffer[16] = {0};
     char *buffer_payload;
     int64_t last_call = esp_timer_get_time();
-    int retrain_msg;
-
 
     while (1)
     {
@@ -49,35 +47,22 @@ void app_main(void)
         if (esp_timer_get_time() - last_call > CONFIG_TIMER_READ_US)
         {
 
-            volt = get_value();
-            snprintf(buffer, 15, "%.4f", volt);
-
+            snprintf(buffer, 15, "%.4f", get_value());
             size_t olen = 0;
-            // ESP_LOGD(__FILE__, "len: [%i]", strlen(buffer));
             buffer_payload = encryptPayload(buffer, &olen);
+
             if (buffer_payload != NULL)
             {
-
-                // esp_mqtt_client_publish(client_mqtt, "esp1/volt2", buffer, 0, 0, 0);
-
-                // char *out = decrypt(olen, buffer_payload);
-                // if(out != NULL){
-                //     ESP_LOGI(__FILE__, "%s", out);
-                //     free(out);
-                // }
-
                 size_t encode_len = 0;
-                uint8_t enc[1000] = {0};
-                mbedtls_base64_encode((uint8_t *)enc, 1000, &encode_len, (const uint8_t *)buffer_payload, olen);
-                // ESP_LOGI(__FILE__, "%i", olen);
-                // ESP_LOGI(__FILE__, "%s", enc);
-                retrain_msg = esp_mqtt_client_publish(client_mqtt, "esp1/volt", (char *)enc, 0, QoS, 0);
-                // ESP_LOGI(__FILE__, "%i", retrain_msg);
+                uint8_t enc[400] = {0};
+                mbedtls_base64_encode((uint8_t *)enc, 400, &encode_len, (const uint8_t *)buffer_payload, olen);
 
+
+                esp_mqtt_client_publish(client_mqtt, "esp1/volt", (char *)enc, 0, QoS, 0);
+             
                 free(buffer_payload);
             }
 
-            // ESP_LOGI(__FILE__, "%s", buffer);
             last_call = esp_timer_get_time();
             
         }
