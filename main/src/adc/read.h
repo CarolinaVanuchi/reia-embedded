@@ -1,40 +1,24 @@
 #ifndef _READ_
 #define _READ_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "sdkconfig.h"
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 
-static esp_adc_cal_characteristics_t adc1_chars;
+esp_err_t errror;
 
-void setup_read(void)
+float get_value_adc_1(adc1_channel_t adc_channel)
 {
-    gpio_config_t adc_gpio = { 
-        .mode = GPIO_MODE_INPUT, 
-        .pin_bit_mask = (1ULL<<34) 
-    };
-
-    gpio_config(&adc_gpio);
-    adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11);
-
-    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_11, 0, &adc1_chars);
-    adc1_config_width(ADC_WIDTH_BIT_11);
-    adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11);
+    return (adc1_get_raw(adc_channel)*3.3/4096);
 }
 
-float get_value(void)
+float get_value_adc_2(adc2_channel_t adc_channel)
 {
-    uint32_t voltage_raw;
-    float voltage;
-    voltage_raw = adc1_get_raw(ADC1_CHANNEL_6);
-    voltage = (voltage_raw*3.3/2048);
-    return voltage;
+    int read_raw = 0;
+    errror = adc2_get_raw(adc_channel, ADC_WIDTH_BIT_12, &read_raw);
+    ESP_LOGI(__FILE__, "READ ADC2 [%i]", read_raw);
+    ESP_LOGI(__FILE__, "READ ERROR [%s]", esp_err_to_name(errror));
+    return (read_raw *3.3/4096);
 }
+
 
 #endif

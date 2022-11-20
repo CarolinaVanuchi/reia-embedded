@@ -1,70 +1,62 @@
 #include <stdio.h>
 #include "sdkconfig.h"
+#include <nvs_flash.h>
 #include "esp_log.h"
 #include "src/connect/wifi.h"
-#include "src/connect/mqtt.h"
-#include "src/adc/read.h"
+#include "src/mqtt/mqtt.h"
 #include "esp_timer.h"
-#include <nvs_flash.h>
 #include "src/crypt/encrypt.h"
 #include <mbedtls/base64.h>
-
-#define QoS 2
+#include "src/adc/gpio_adc.h"
+#include "src/adc/read.h"
+#include "src/mqtt/topic.h"
+#include "src/mqtt/publish_payload.h"
 
 void app_main(void)
 {
 
-    ESP_LOGI(__FILE__, "Start...");
+    // Channel 1    
+    // setup_gpio_adc1(&adc_gpio_ch1_36, ADC1_CHANNEL_0);
+    // setup_gpio_adc1(&adc_gpio_ch1_37, ADC1_CHANNEL_1);
+    // setup_gpio_adc1(&adc_gpio_ch1_38, ADC1_CHANNEL_2);
+    // setup_gpio_adc1(&adc_gpio_ch1_39, ADC1_CHANNEL_3);
+    // setup_gpio_adc1(&adc_gpio_ch1_32, ADC1_CHANNEL_4);
+    // setup_gpio_adc1(&adc_gpio_ch1_33, ADC1_CHANNEL_5);
+    setup_gpio_adc1(&adc_gpio_ch1_34, ADC1_CHANNEL_6);
+    setup_gpio_adc1(&adc_gpio_ch1_35, ADC1_CHANNEL_7); 
 
-    if (!loadRsaKeyEncrypt())
-    {
-        ESP_LOGE(__FILE__, "Error to load RSA key");
-        return;
-    }
+    // // Channel 2
+    setup_gpio_adc2(&adc_gpio_ch2_04, ADC2_CHANNEL_0);
+    // setup_gpio_adc2(&adc_gpio_ch2_00, ADC2_CHANNEL_1);
+    // setup_gpio_adc2(&adc_gpio_ch2_02, ADC2_CHANNEL_2);
+    // setup_gpio_adc2(&adc_gpio_ch2_15, ADC2_CHANNEL_3);
+    // setup_gpio_adc2(&adc_gpio_ch2_13, ADC2_CHANNEL_4);
+    // setup_gpio_adc2(&adc_gpio_ch2_12, ADC2_CHANNEL_5);
+    // setup_gpio_adc2(&adc_gpio_ch2_14, ADC2_CHANNEL_6);
+    // setup_gpio_adc2(&adc_gpio_ch2_27, ADC2_CHANNEL_7);
+    // setup_gpio_adc2(&adc_gpio_ch2_25, ADC2_CHANNEL_8);
+    // setup_gpio_adc2(&adc_gpio_ch2_26, ADC2_CHANNEL_9);
 
-    if (!loadRsaKeyDecrypt())
-    {
-        ESP_LOGE(__FILE__, "Error to load RSA key for decryption");
-        return;
-    }
-
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ESP_ERROR_CHECK(connect_wifi_connect());
-
-    setup_read();
+    if (nvs_flash_init() != ESP_OK)                 return;
+    if (esp_netif_init() != ESP_OK)                 return;
+    if (esp_event_loop_create_default() != ESP_OK)  return;
+    if (connect_wifi_connect() != ESP_OK)           return;
+    
+    if (!loadRsaKeyEncrypt())                       return;
+    if (!loadRsaKeyDecrypt())                       return;
+    
     esp_mqtt_client_handle_t client_mqtt = setup_mqtt();
 
-   
-    char buffer[16] = {0};
-    char *buffer_payload;
     int64_t last_call = esp_timer_get_time();
-
     while (1)
     {
-     
-        if (esp_timer_get_time() - last_call > CONFIG_TIMER_READ_US)
+        if (sampling > 0 && (esp_timer_get_time() - last_call > sampling) )
         {
-
-            snprintf(buffer, 15, "%.4f", get_value());
-            size_t olen = 0;
-            buffer_payload = encryptPayload(buffer, &olen);
-
-            if (buffer_payload != NULL)
-            {
-                size_t encode_len = 0;
-                uint8_t enc[400] = {0};
-                mbedtls_base64_encode((uint8_t *)enc, 400, &encode_len, (const uint8_t *)buffer_payload, olen);
-
-
-                esp_mqtt_client_publish(client_mqtt, "esp1/volt", (char *)enc, 0, QoS, 0);
-             
-                free(buffer_payload);
-            }
-
-            last_call = esp_timer_get_time();
-            
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_6, topic_ch1_34);
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_7, topic_ch1_35);
+            send_payload_ch2(client_mqtt, ADC2_CHANNEL_0, topic_ch2_04);
+            last_call = esp_timer_get_time();   
         }
     }
 }
+
