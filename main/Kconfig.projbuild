@@ -32,6 +32,12 @@ menu "MQTT Connection"
         default "2022"
         help
             Password to connect mqtt broker
+
+    config MQTT_CLIENT_ID
+        string "MQTT Client Id"
+        default "esp002"
+        help
+            Client Id to connect
 endmenu
 
 menu "Timers"
@@ -41,4 +47,62 @@ menu "Timers"
         default 5000000
         help
             Timer in microseconds to read values
+endmenu
+
+menu "MQTT Topics"
+
+    config TOPIC_READ_SAMPLE
+        string "Topic to read sample"
+        default "webserver/sample"
+        help
+            Topic to read sample
+
+    config TOPIC_GPIO36
+        string "Topic to read gpio 36"
+        default "esp002/gpio36"
+        help
+            Topic to read gpio 36
+
+    config TOPIC_GPIO37
+        string "Topic to read gpio 37"
+        default "esp002/gpio37"
+        help
+            Topic to read gpio 37
+
+    config TOPIC_GPIO38
+    string "Topic to read gpio 38"
+    default "esp002/gpio38"
+    help
+        Topic to read gpio 38
+
+    config TOPIC_GPIO39
+    string "Topic to read gpio 39"
+    default "esp002/gpio39"
+    help
+        Topic to read gpio 39
+
+    config TOPIC_GPIO32
+    string "Topic to read gpio 32"
+    default "esp002/gpio32"
+    help
+        Topic to read gpio 32
+
+    config TOPIC_GPIO33
+    string "Topic to read gpio 33"
+    default "esp002/gpio33"
+    help
+        Topic to read gpio 33
+
+    config TOPIC_GPIO34
+    string "Topic to read gpio 34"
+    default "esp002/gpio34"
+    help
+        Topic to read gpio 34
+
+    config TOPIC_GPIO35
+    string "Topic to read gpio 35"
+    default "esp002/gpio35"
+    help
+        Topic to read gpio 35
+
 endmenu

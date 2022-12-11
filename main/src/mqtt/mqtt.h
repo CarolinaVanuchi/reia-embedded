@@ -9,7 +9,7 @@
 #include "../text_file.h"
 #include "src/crypt/decrypt.h"
 
-uint32_t sampling = 10000000;
+uint32_t sampling = CONFIG_TIMER_READ_US;
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -20,7 +20,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(__FILE__, "MQTT_EVENT_CONNECTED");
-            esp_mqtt_client_subscribe(client, "webserver/sampling", 2);
+            esp_mqtt_client_subscribe(client, CONFIG_TOPIC_READ_SAMPLE, 2);
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(__FILE__, "MQTT_EVENT_DISCONNECTED");
@@ -68,6 +68,7 @@ esp_mqtt_client_handle_t setup_mqtt()
         .cert_pem = (const char *)cacert_start,
         .username = CONFIG_MQTT_USERNAME,
         .password = CONFIG_MQTT_PASSWORD,
+        .client_id = CONFIG_MQTT_CLIENT_ID,
     };
 
     esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_conf);

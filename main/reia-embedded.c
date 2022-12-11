@@ -3,39 +3,12 @@
 #include <nvs_flash.h>
 #include "esp_log.h"
 #include "src/connect/wifi.h"
-#include "src/mqtt/mqtt.h"
 #include "esp_timer.h"
-#include "src/crypt/encrypt.h"
-#include <mbedtls/base64.h>
 #include "src/adc/gpio_adc.h"
-#include "src/adc/read.h"
-#include "src/mqtt/topic.h"
 #include "src/mqtt/publish_payload.h"
 
 void app_main(void)
 {
-
-    // Channel 1    
-    // setup_gpio_adc1(&adc_gpio_ch1_36, ADC1_CHANNEL_0);
-    // setup_gpio_adc1(&adc_gpio_ch1_37, ADC1_CHANNEL_1);
-    // setup_gpio_adc1(&adc_gpio_ch1_38, ADC1_CHANNEL_2);
-    // setup_gpio_adc1(&adc_gpio_ch1_39, ADC1_CHANNEL_3);
-    // setup_gpio_adc1(&adc_gpio_ch1_32, ADC1_CHANNEL_4);
-    // setup_gpio_adc1(&adc_gpio_ch1_33, ADC1_CHANNEL_5);
-    setup_gpio_adc1(&adc_gpio_ch1_34, ADC1_CHANNEL_6);
-    setup_gpio_adc1(&adc_gpio_ch1_35, ADC1_CHANNEL_7); 
-
-    // // Channel 2
-    setup_gpio_adc2(&adc_gpio_ch2_04, ADC2_CHANNEL_0);
-    // setup_gpio_adc2(&adc_gpio_ch2_00, ADC2_CHANNEL_1);
-    // setup_gpio_adc2(&adc_gpio_ch2_02, ADC2_CHANNEL_2);
-    // setup_gpio_adc2(&adc_gpio_ch2_15, ADC2_CHANNEL_3);
-    // setup_gpio_adc2(&adc_gpio_ch2_13, ADC2_CHANNEL_4);
-    // setup_gpio_adc2(&adc_gpio_ch2_12, ADC2_CHANNEL_5);
-    // setup_gpio_adc2(&adc_gpio_ch2_14, ADC2_CHANNEL_6);
-    // setup_gpio_adc2(&adc_gpio_ch2_27, ADC2_CHANNEL_7);
-    // setup_gpio_adc2(&adc_gpio_ch2_25, ADC2_CHANNEL_8);
-    // setup_gpio_adc2(&adc_gpio_ch2_26, ADC2_CHANNEL_9);
 
     if (nvs_flash_init() != ESP_OK)                 return;
     if (esp_netif_init() != ESP_OK)                 return;
@@ -44,6 +17,16 @@ void app_main(void)
     
     if (!loadRsaKeyEncrypt())                       return;
     if (!loadRsaKeyDecrypt())                       return;
+
+    setup_gpio_adc1(&adc_gpio_ch1_36, ADC1_CHANNEL_0);
+    setup_gpio_adc1(&adc_gpio_ch1_39, ADC1_CHANNEL_3);
+    setup_gpio_adc1(&adc_gpio_ch1_34, ADC1_CHANNEL_6);
+    setup_gpio_adc1(&adc_gpio_ch1_35, ADC1_CHANNEL_7); 
+    setup_gpio_adc1(&adc_gpio_ch1_32, ADC1_CHANNEL_4);
+    setup_gpio_adc1(&adc_gpio_ch1_33, ADC1_CHANNEL_5);
+
+    // setup_gpio_adc1(&adc_gpio_ch1_37, ADC1_CHANNEL_1);
+    // setup_gpio_adc1(&adc_gpio_ch1_38, ADC1_CHANNEL_2);
     
     esp_mqtt_client_handle_t client_mqtt = setup_mqtt();
 
@@ -52,9 +35,16 @@ void app_main(void)
     {
         if (sampling > 0 && (esp_timer_get_time() - last_call > sampling) )
         {
-            send_payload_ch1(client_mqtt, ADC1_CHANNEL_6, topic_ch1_34);
-            send_payload_ch1(client_mqtt, ADC1_CHANNEL_7, topic_ch1_35);
-            send_payload_ch2(client_mqtt, ADC2_CHANNEL_0, topic_ch2_04);
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_0, CONFIG_TOPIC_GPIO36);
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_3, CONFIG_TOPIC_GPIO39);
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_6, CONFIG_TOPIC_GPIO34);
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_7, CONFIG_TOPIC_GPIO35);
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_4, CONFIG_TOPIC_GPIO32);
+            send_payload_ch1(client_mqtt, ADC1_CHANNEL_5, CONFIG_TOPIC_GPIO33);
+
+            // send_payload_ch1(client_mqtt, ADC1_CHANNEL_1, CONFIG_TOPIC_GPIO37);
+            // send_payload_ch1(client_mqtt, ADC1_CHANNEL_2, CONFIG_TOPIC_GPIO38);
+
             last_call = esp_timer_get_time();   
         }
     }
